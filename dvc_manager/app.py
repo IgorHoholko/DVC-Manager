@@ -1,24 +1,27 @@
-from genericpath import exists
-from flask import Flask, render_template, redirect
-import os
+from flask import Flask, jsonify, make_response
+from flask_login import LoginManager
+
+from datasets.controllers import datasets
 
 
-from datasets.datasets import datasets
 from auth.auth import auth
 
 
 server = Flask(__name__, static_url_path='')
 
-server.register_blueprint(datasets, url_prefix = '/datasets')
+server.config["SECRET_KEY"] = "13221fa2r1wqrasr125"
 
-server.register_blueprint(auth, url_prefix = '/auth')
 
-# executor = PipeExecutor('/hostpipe')
+login_manager = LoginManager(server)
 
-@server.route('/')
-def root():
-    # executor.addGroup("shitgroup")
-    # executor.getGroups()
-    # executor.getUsers()
-    return "Hi"
-    return redirect("/datasets"), 302
+server.register_blueprint(datasets, url_prefix = '/api/datasets')
+
+server.register_blueprint(auth, url_prefix = '/api/auth')
+
+
+@server.route('/api', methods=["GET"])
+def index():
+    response = {'name': 'Hi'}
+    print('api')
+    response = make_response(jsonify(response))
+    return response
