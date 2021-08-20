@@ -1,2 +1,6 @@
 flask
 gunicorn
+flask_login
+flask_wtf
+flask_praetorian
+flask_cors
