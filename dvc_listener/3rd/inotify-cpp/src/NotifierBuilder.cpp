@@ -125,7 +125,6 @@ auto NotifierBuilder::run() -> void
         if (mInotify->hasStopped()) {
           break;
         }
-
         runOnce();
     }
 }

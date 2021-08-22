@@ -17,9 +17,19 @@ add_subdirectory(3rd/inotify-cpp)
 set(INCLUDE
     src
     src/utils
+    src/core
+    src/core/workflow
 )
 
-add_executable(${PROJECT_NAME} main.cpp)
+set(SOURCE
+    # src/core/WorkerThread.cpp
+    src/core/Listener.cpp
+    src/entities/DVCEvent.h
+)
+
+
+
+add_executable(${PROJECT_NAME} main.cpp ${SOURCE})
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC 3rd/inotify-cpp/src)
