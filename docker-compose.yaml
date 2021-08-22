@@ -2,20 +2,20 @@ version: '3'
 
 
 services:
-  dvc_manager:
+  api:
     privileged: true
-    container_name: dvc_manager
+    container_name: api
     restart: always
-    build: ./dvc_manager
+    build: ./api
     ports:
-      - "8000:8000"
-    command: gunicorn -w 1 -b 0.0.0.0:8000 wsgi:server --reload
+      - "5000:5000"
+    command: gunicorn -w 1 -b 0.0.0.0:5000 wsgi:server --reload
     environment:
       - FLASK_DEBUG=1
       - PYTHONUNBUFFERED=1
       - HISTFILE=/dev/null
     volumes:
-    - ./dvc_manager:/usr/src/dvc_manager
+    - ./api:/usr/src/api
     - /etc/group:/etc/group
     - /etc/passwd:/etc/passwd
     - /etc/shadow:/etc/shadow
@@ -32,7 +32,7 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - dvc_manager
+      - api
 
   
   nginx:
@@ -42,8 +42,20 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - dvc_manager
+      - api
       - client
+
+  dvc_listener:
+    container_name: dvc_listener
+    restart: always
+    build: ./dvc_listener
+    ports:
+      - "8080:8080"
+    volumes: 
+      - ./dvc_listener:/usr/src/dvc_listener
+      - /home/ihoholko/tmp:/tmp
+
+
 
   # db:
   #   image: postgres
