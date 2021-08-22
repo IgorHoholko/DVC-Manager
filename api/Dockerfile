@@ -1,6 +1,6 @@
 FROM python:3.8.11
 
-WORKDIR /usr/src/dvc_manager
+WORKDIR /usr/src/api
 
 COPY requirements.txt .
 
