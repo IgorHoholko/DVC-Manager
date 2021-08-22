@@ -7,7 +7,10 @@ import {
   Route,
   Link
 } from "react-router-dom";
+import { Footer } from "./components/Footer";
+import Album from "./pages/Album";
 import SignIn from "./pages/SignIn";
+import {Header} from "./components/Header"
 
 export default function App() {
   return (
@@ -25,29 +28,40 @@ export default function App() {
               <Link to="/login">Login</Link>
             </li>
             <li>
-              <Link to="/secret">Secret</Link>
+              <Link to="/datasets">Datasets</Link>
             </li>
           </ul>
         </nav>
 
+        <div>
+          <Header/>
+        </div>
+
         {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
-        <Route path="/logout">
+          <Route path="/logout">
             <Logout />
           </Route>
           <Route path="/login">
             <SignIn />
           </Route>
-          <Route path="/secret">
-            <Secret />
+          <Route path="/datasets">
+            <Album />
           </Route>
           <Route path="/">
             <Home />
           </Route>
         </Switch>
       </div>
+
+          {/* <div>
+            <Footer / >
+          </div> */}
+ 
+
     </Router>
+
   );
 }
 
@@ -63,9 +77,4 @@ function Logout() {
     axios.post("/api/auth/logout")
   }, [])
   return <h2>Logout</h2>;
-}
-
-
-function Secret() {
-  return <h2>Secret</h2>;
 }
