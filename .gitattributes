@@ -1,2 +1,3 @@
 dvc_listener/3rd/* linguist-vendored=true
+dvc_listener/3rd/** linguist-vendored=true
 **/3rd/* linguist-vendored=true
