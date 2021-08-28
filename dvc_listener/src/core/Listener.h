@@ -1,22 +1,29 @@
 #pragma once
 
-#include "../entities/DVCEvent.h"
+#include "../utils/common.h"
 #include <inotify-cpp/NotifierBuilder.h>
 #include <queue>
 #include <string>
+
 
 namespace dvc_listener {
 
     class Listener {
     public:
-        Listener(const std::filesystem::path& path, std::queue<DVCEvent>& message_quee, const std::string& watch_extention);
+        Listener(const std::filesystem::path& path, const MessageQueueEventsPtr& message_quee_events, const std::string& watch_extention);
 
-        inotify::NotifierBuilder init();
+        void init();
+        void run();
+        void stop();
 
-        const std::initializer_list<inotify::Event> events = {inotify::Event::create, inotify::Event::move};
-
+    public:
+        const std::initializer_list<inotify::Event> events_to_listen = {inotify::Event::create, inotify::Event::move};
 
     private:
+        MessageQueueEventsPtr _message_quee_events;
+
+        inotify::NotifierBuilder _notifier;
+
         std::filesystem::path _path;
         std::queue<DVCEvent>  _message_quee;
         std::string           _watch_extention;

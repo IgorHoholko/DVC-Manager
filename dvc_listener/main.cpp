@@ -4,11 +4,14 @@
 
 #include "src/core/Listener.h"
 #include "src/entities/DVCEvent.h"
+#include "src/utils/common.h"
 
 #include <chrono>
 #include <iostream>
 #include <queue>
 #include <thread>
+
+using namespace dvc_listener;
 
 
 int main(int argc, char** argv) {
@@ -20,9 +23,10 @@ int main(int argc, char** argv) {
     // Parse the directory to watch
     std::filesystem::path path(argv[1]);
 
-    std::queue<dvc_listener::DVCEvent> message_quee;
+    MessageQueueEventsPtr message_quee_events(new MessageQueueEvents());
 
-    auto listener = dvc_listener::Listener(path, message_quee, ".dir").init();
+    auto listener = Listener(path, message_quee_events, ".dir");
+    listener.init();
 
 
     // The event loop is started in a separate thread context.

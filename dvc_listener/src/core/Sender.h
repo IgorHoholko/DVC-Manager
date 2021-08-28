@@ -28,25 +28,32 @@ using namespace web::json;                                  // JSON library
 
 
 #include "../entities/DVCEvent.h"
+#include "../utils/common.h"
 
 
 namespace dvc_listener{
 
     class Sender{
     public:
-        Sender(const std::string& url, std::queue<DVCEvent>& message_quee, const std::string& username, const std::string& password );
+        Sender(const std::string& url, const MessageQueueMetaPtr& message_quee_meta, const std::string& username,
+               const std::string& password, std::chrono::seconds sleep_interval);
 
-        bool run();
+        void run();
+        void stop();
 
         const std::string url;
 
     private:
 
-        bool _sentDVCEvent(DVCEvent&& event);
+        bool _sendDVCMeta(const DVCMeta& meta);
 
         void _auth();
 
+
     private:
+        MessageQueueMetaPtr _message_quee_meta;
+
+        std::chrono::seconds _sleep_interval;
 
         std::string _username;
         std::string _password;

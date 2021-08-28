@@ -31,6 +31,7 @@ set(SOURCE
     src/entities/DVCEvent.h
     src/entities/DVCMeta.h
     src/core/MetaBuilder.cpp
+    src/utils/common.h
 )
 
 
