@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     std::thread thread([&]() { listener.run(); });
 
     // Terminate the event loop after 60 seconds
-    std::this_thread::sleep_for(std::chrono::seconds(60));
+    std::this_thread::sleep_for(std::chrono::hours(60));
     listener.stop();
     thread.join();
     return 0;

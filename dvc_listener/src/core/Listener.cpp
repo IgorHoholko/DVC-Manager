@@ -13,7 +13,7 @@ namespace dvc_listener {
             std::cout << "Try.." << std::endl;
             if (notification.path.has_extension() && notification.path.extension() == this->_watch_extention) {
                 std::cout << "\tCatched! " << notification.path << std::endl;
-                this->_message_quee.push(DVCEvent{notification.path, notification.time, notification.event});
+                this->_message_quee.push(DVCEvent{notification.path, notification.time});
 
             }
         };
