@@ -4,11 +4,14 @@
 
 #include "src/core/MetaBuilder.h"
 #include "src/entities/DVCEvent.h"
+#include "src/utils/common.h"
 
 #include <chrono>
 #include <iostream>
 #include <queue>
 #include <thread>
+
+using namespace dvc_listener;
 
 
 int main(int argc, char** argv) {
@@ -22,8 +25,10 @@ int main(int argc, char** argv) {
 
     dvc_listener::DVCEvent event{ path, std::chrono::steady_clock::now()};
 
+    MessageQueueEventsPtr message_quee_events(new MessageQueueEvents());
+    MessageQueueMetaPtr message_quee_meta(new MessageQueueMeta());
 
-    auto meta_builder = dvc_listener::MetaBuilder(path);
+    auto meta_builder = dvc_listener::MetaBuilder(path, message_quee_events,message_quee_meta, std::chrono::seconds(1) );
     meta_builder.parse(event);
 
     return 0;
