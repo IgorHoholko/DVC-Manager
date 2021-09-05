@@ -5,56 +5,102 @@ services:
   api:
     privileged: true
     container_name: api
-    restart: always
+    restart: unless-stopped
     build: ./api
     ports:
-      - "5000:5000"
-    command: gunicorn -w 1 -b 0.0.0.0:5000 wsgi:server --reload
+      - "${API_PORT}:5000"
+    command: gunicorn -w 1 -b 0.0.0.0:${API_PORT} wsgi:server --reload
     environment:
-      - FLASK_DEBUG=1
-      - PYTHONUNBUFFERED=1
-      - HISTFILE=/dev/null
+      - FLASK_DEBUG=${DEBUG}
+      - PYTHONUNBUFFERED=${API_PYTHONUNBUFFERED}
+      - HISTFILE=${API_HISTFILE}
+      - MONGODB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_HOSTNAME=mongodb
     volumes:
-    - ./api:/usr/src/api
-    - /etc/group:/etc/group
-    - /etc/passwd:/etc/passwd
-    - /etc/shadow:/etc/shadow
-    - /home:/home
+      - ./api:/usr/src/api
+      - /etc/group:/etc/group
+      - /etc/passwd:/etc/passwd
+      - /etc/shadow:/etc/shadow
+      - /home:/home
+    networks:
+      - frontend
+      - backend
+    links: 
+      - mongodb
+    depends_on:
+      - mongodb
+
+
+  mongodb:
+    image: mongo:4.0.8
+    container_name: mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONDODB_LOG_DIR=${MONDODB_LOG_DIR}
+      - MONGODB_DATA_DIR=/data/db
+    volumes:
+      - ${MONGO_DATA_PATH}:/data/db
+    networks:
+      - backend
 
 
   client:
+    container_name: client
+    restart: always
     build: ./client
     command: ["npm", "start"]
     volumes:
       - ./client:/client
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV}
     ports:
-      - '3000:3000'
+      - '${CLIENT_PORT}:3000'
     depends_on:
       - api
+    networks:
+      - frontend
 
   
   nginx:
     container_name: nginx
-    restart: always
+    restart: unless-stopped
     build: ./nginx
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ${NGINX_DATA_PATH}:/var/log/nginx
     depends_on:
       - api
       - client
+    networks:
+      - frontend
 
-  dvc_listener:
-    container_name: dvc_listener
-    restart: always
-    build: ./dvc_listener
-    ports:
-      - "8080:8080"
-    volumes: 
-      - ./dvc_listener:/usr/src/dvc_listener
-      - /home/ihoholko/tmp:/tmp
 
+  # dvc_listener:
+  #   container_name: dvc_listener
+  #   restart: always
+  #   build: ./dvc_listener
+  #   ports:
+  #     - "${DVC_LISTENER_PORT}:8080"
+  #   volumes: 
+  #     - ./dvc_listener:/usr/src/dvc_listener
+  #     - /home/ihoholko/tmp:/tmp
+  #   networks:
+  #     - frontend
+
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
 
 
   # db:
