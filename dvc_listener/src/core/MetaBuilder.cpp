@@ -2,26 +2,38 @@
 
 namespace dvc_listener {
 
-    MetaBuilder::MetaBuilder(const std::filesystem::path& path_dvc_storage)
-        : path_dvc_storage(path_dvc_storage) {}
+    MetaBuilder::MetaBuilder(const std::filesystem::path& path_dvc_storage, const MessageQueueEventsPtr& message_queue_events,
+                             const MessageQueueMetaPtr& message_queue_meta, std::chrono::seconds sleep_interval)
+        : path_dvc_storage(path_dvc_storage)
+        , _message_queue_events(message_queue_events)
+        , _message_queue_meta(message_queue_meta)
+        , sleep_interval(sleep_interval) {}
 
+    void MetaBuilder::init() {}
 
-    std::tuple<std::string, std::string> MetaBuilder::_extractDatasetAndExtention(const std::string& rp) {
-        std::string dataset = "";
-        std::string ext = "";
+    void MetaBuilder::run() {
+        DVCMeta meta;
+        while (true) {
+            if (this->_stop) {
+                this->_stop = false;
+                return;
+            }
 
-        auto slash_pos  = rp.find("/");
-        
-        bool is_dataset = slash_pos != rp.npos && slash_pos + 1 != rp.size();// exclude 'fake' and 'fake/'
-        if (!is_dataset) return std::tie(dataset,ext);
+            if (!this->_message_queue_events->empty()) {
+                auto event = this->_message_queue_events->front();
 
-        dataset = rp.substr(0, slash_pos);
+                meta = this->parse(event);// TODO: Check for big files delay
 
-        auto back_slash_pos = rp.rfind("/");
-        auto ext_pos        = rp.rfind(".");
+                this->_message_queue_meta->push(meta);
+                this->_message_queue_meta->pop();
+            }
 
-        ext = (ext_pos < back_slash_pos || ext_pos == rp.npos) ? "": rp.substr(ext_pos, rp.size());
-        return std::tie(dataset, ext);
+            std::this_thread::sleep_for(this->sleep_interval);
+        }
+    }
+
+    void MetaBuilder::stop() {
+        this->_stop = true;
     }
 
 
@@ -36,8 +48,8 @@ namespace dvc_listener {
             throw std::runtime_error(msg.str());
         }
 
-        std::unordered_set<std::string>                                          datasets;
-        std::unordered_map<std::string, std::unordered_map<std::string, size_t>> counter;
+        std::unordered_set<std::string>              datasets;
+        std::unordered_map<std::string, str_counter> counter;
 
         char s;
         char trash_buf[500];
@@ -62,10 +74,15 @@ namespace dvc_listener {
 
                 std::tie(dataset, extention) = this->_extractDatasetAndExtention(realpath);
 
-                datasets.emplace(dataset);
-                ++counter[dataset][extention];
+                meta.datasets.emplace(dataset);
+                ++meta.ext_counter[dataset][extention];
             }
         }
+
+        meta.path_meta   = event.path;
+        meta.time        = event.time;
+
+        fin.close();
 
         for (auto da : datasets) {
             std::cout << da << ":" << std::endl;
@@ -76,10 +93,26 @@ namespace dvc_listener {
         }
 
         std::cout << std::endl;
-        fin.close();
 
+        return meta;
+    }
 
-        fin.close();
+    std::tuple<std::string, std::string> MetaBuilder::_extractDatasetAndExtention(const std::string& rp) {
+        std::string dataset = "";
+        std::string ext     = "";
+
+        auto slash_pos = rp.find("/");
+
+        bool is_dataset = slash_pos != rp.npos && slash_pos + 1 != rp.size();// exclude 'fake' and 'fake/'
+        if (!is_dataset) return std::tie(dataset, ext);
+
+        dataset = rp.substr(0, slash_pos);
+
+        auto back_slash_pos = rp.rfind("/");
+        auto ext_pos        = rp.rfind(".");
+
+        ext = (ext_pos < back_slash_pos || ext_pos == rp.npos) ? "" : rp.substr(ext_pos, rp.size());
+        return std::tie(dataset, ext);
     }
 
 
