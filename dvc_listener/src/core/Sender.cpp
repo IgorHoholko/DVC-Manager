@@ -19,7 +19,7 @@ namespace dvc_listener {
     void Sender::run() {
         while (true) {
             if (this->_stop){
-                this->stop = false;
+                this->_stop = false;
                 return;
             }
             
@@ -29,7 +29,7 @@ namespace dvc_listener {
                     this->_message_quee_meta->pop();
                 }
             }
-            std::this_thread::sleep_for(this->_sleep_interval);
+            std::this_thread::sleep_for(this->sleep_interval);
         }
     }
 
