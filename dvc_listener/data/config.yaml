@@ -1,0 +1,8 @@
+
+# Sleep intervals in seconds.
+meta_builder_sleep_interval: 1
+
+sender_sleep_interval: 1
+
+listener_watch_extention: ".dir"
+
