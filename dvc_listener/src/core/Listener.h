@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../utils/common.h"
+#include "IWorker.h"
 #include <inotify-cpp/NotifierBuilder.h>
 #include <queue>
 #include <string>
@@ -8,13 +9,13 @@
 
 namespace dvc_listener {
 
-    class Listener {
+    class Listener: public IWorker{
     public:
         Listener(const std::filesystem::path& path, const MessageQueueEventsPtr& message_quee_events, const std::string& watch_extention);
 
-        void init();
-        void run();
-        void stop();
+        void init() override;
+        void run() override;
+        void stop() override;
 
     public:
         const std::initializer_list<inotify::Event> events_to_listen = {inotify::Event::create, inotify::Event::move};
